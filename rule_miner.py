@@ -22,7 +22,8 @@ class RuleMiner(object):
         Returns:
             int -- support for itemset in data
         """
-        return data[itemset].all(axis="columns").sum()
+
+        return data[itemset].all(axis=1).sum()
 
     def merge_itemsets(self, itemsets):
         """Returns a list of merged itemsets. If one itemset of size 2
@@ -81,10 +82,15 @@ class RuleMiner(object):
         combinations = [list(combination) for combination in combinations]
 
         rules = []
-        for combination in combinations:
-            diff = set(itemset) - set(combination)
-            rules.append([combination, list(diff)])
-            rules.append([list(diff), combination])
+        if (len(itemset) > 2):
+            for combination in combinations:
+                diff = set(itemset) - set(combination)
+                rules.append([combination, list(diff)])
+                rules.append([list(diff), combination])
+        else:
+            for combination in combinations:
+                diff = set(itemset) - set(combination)
+                rules.append([combination, list(diff)])
 
         return rules
 
@@ -99,8 +105,6 @@ class RuleMiner(object):
             list -- list of frequent itemsets in the dataset.
         """
 
-        # TODO: Complete this function.
-
         itemsets = [[i] for i in data.columns]
         old_itemsets = []
         flag = True
@@ -108,12 +112,8 @@ class RuleMiner(object):
         while flag:
             new_itemsets = []
             for itemset in itemsets:
-                # TODO: Get the support for each itemset and add the itemset to
-                # the list new_itemsets if the support for the itemset is
-                # greater than or equal to the support threshold support_t
-                # Hint: Use the get_support() function that we have defined in
-                # this class.
-                if (self.get_support(data,itemset)>=self.support_t):
+                supp = self.get_support(data, itemset)
+                if supp >= self.support_t:
                     new_itemsets.append(itemset)
 
             if len(new_itemsets) != 0:
@@ -138,11 +138,10 @@ class RuleMiner(object):
             float -- confidence for rule in data
         """
 
-        # TODO: Implement this function based on the documentation.
-        # Hint: Use the get_support() function that we have defined in this
-        # class.
-        return self.get_support(data, rule[0] + rule[1]) / self.get_support(data, rule[0])
-        
+        X = self.get_support(data, rule[0]+rule[1])
+        y = self.get_support(data, rule[0])
+
+        return X / y
 
     def get_association_rules(self, data):
         """Returns a list of association rules with support greater than or
@@ -155,29 +154,15 @@ class RuleMiner(object):
             list -- list of association rules. If the rule is X -> y, then each
             rule is a list containing [X, y].
         """
-        # TODO: Complete this function.
-
-        # TODO: Call the get_frequent_itemsets() function that we have defined
-        # in this class, and assign the result to the variable itemsets.
-
         itemsets = self.get_frequent_itemsets(data)
 
         rules = []
         for itemset in itemsets:
-            # TODO: Get the rules for each frequent itemset and add to the
-            # list rules
-            # Hint: Use the get_rules() function that we have defined in this
-            # class.
-            rules = rules + self.get_rules(itemset)
+            rules += self.get_rules(itemset)
 
         association_rules = []
         for rule in rules:
-            # TODO: Get the confidence for each rule and add the rule to
-            # the list association_rules if the confidence for the rule is
-            # greater than or equal to the confidence threshold confidence_t
-            # Hint: Use the get_confidence() function that we have defined in
-            # this class.
-            if (self.get_confidence(data, rule)>=self.confidence_t):
-                association_rules += rule
+            if self.get_confidence(data, rule) >= self.confidence_t:
+                association_rules.append(rule)
 
         return association_rules
