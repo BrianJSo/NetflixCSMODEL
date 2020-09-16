@@ -1,6 +1,4 @@
 import itertools
-import numpy as np
-import pandas as pd
 
 class RuleMiner(object):
 
@@ -20,17 +18,11 @@ class RuleMiner(object):
             data {pd.DataFrame} -- DataFrame containing the dataset represented
             as a matrix
             itemset {list} -- list of items to check in each observation
-            in the dataset whatsup
+            in the dataset
         Returns:
             int -- support for itemset in data
         """
-
-        # TODO: Implement this function based on the documentation.
-        # Hint: Use the pandas.DataFrame.all() and the pandas.DataFrame.sum()
-        # function.
-        selectedData = data[itemset]
-        intData = selectedData.all(axis ='columns').astype(int)
-        return intData.sum()
+        return data[itemset].all(axis="columns").sum()
 
     def merge_itemsets(self, itemsets):
         """Returns a list of merged itemsets. If one itemset of size 2
@@ -121,7 +113,7 @@ class RuleMiner(object):
                 # greater than or equal to the support threshold support_t
                 # Hint: Use the get_support() function that we have defined in
                 # this class.
-                if self.support_t <= self.get_support(data, itemset):
+                if (self.get_support(data,itemset)>=self.support_t):
                     new_itemsets.append(itemset)
 
             if len(new_itemsets) != 0:
@@ -149,9 +141,8 @@ class RuleMiner(object):
         # TODO: Implement this function based on the documentation.
         # Hint: Use the get_support() function that we have defined in this
         # class.
-        p = rule[0]
-        q = rule[1]
-        return (self.get_support(data, p + q)/ self.get_support(data, p))
+        return self.get_support(data, rule[0] + rule[1]) / self.get_support(data, rule[0])
+        
 
     def get_association_rules(self, data):
         """Returns a list of association rules with support greater than or
@@ -170,6 +161,7 @@ class RuleMiner(object):
         # in this class, and assign the result to the variable itemsets.
 
         itemsets = self.get_frequent_itemsets(data)
+
         rules = []
         for itemset in itemsets:
             # TODO: Get the rules for each frequent itemset and add to the
@@ -185,7 +177,7 @@ class RuleMiner(object):
             # greater than or equal to the confidence threshold confidence_t
             # Hint: Use the get_confidence() function that we have defined in
             # this class.
-            if self.confidence_t <= self.get_confidence(data, rule):
-                association_rules = association_rules + rule
+            if (self.get_confidence(data, rule)>=self.confidence_t):
+                association_rules += rule
 
         return association_rules
